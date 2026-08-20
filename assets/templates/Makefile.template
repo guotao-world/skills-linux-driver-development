@@ -1,0 +1,46 @@
+# Linux 内核模块编译 Makefile 模板
+#
+# 使用方法：
+#   1. 修改 obj-m 为你的模块名（.o 后缀）
+#   2. 设置 KDIR 为目标内核源码路径
+#   3. 本地编译：make
+#   4. 交叉编译：make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+#   5. 清理：make clean
+
+# 模块目标文件（修改为你的源文件名，.c 对应 .o）
+obj-m := char_device_template.o
+
+# 内核源码路径
+# 本地编译用 /lib/modules/$(shell uname -r)/build
+# 交叉编译修改为实际内核源码树路径，如 /home/user/linux-imx
+KDIR ?= /lib/modules/$(shell uname -r)/build
+
+# 当前目录
+PWD := $(shell pwd)
+
+# 默认目标：编译模块
+all:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+# 清理
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+
+# 安装模块到目标系统（可选）
+install:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules_install
+
+# 帮助
+help:
+	@echo "可用目标:"
+	@echo "  all      - 编译内核模块（默认）"
+	@echo "  clean    - 清理编译产物"
+	@echo "  install  - 安装模块"
+	@echo ""
+	@echo "交叉编译示例:"
+	@echo "  make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- KDIR=/path/to/linux"
+	@echo ""
+	@echo "IMX6 ULL 示例:"
+	@echo "  make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- KDIR=~/linux-imx"
+
+.PHONY: all clean install help
