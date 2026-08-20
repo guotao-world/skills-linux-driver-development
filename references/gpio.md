@@ -132,18 +132,6 @@ echo 3 > /sys/class/gpio/unexport
 
 注意：新内核推荐使用 `gpiochip` 字符设备 + `libgpiod` 库替代 sysfs。
 
-## IMX6 ULL GPIO 编号计算
-
-IMX6 有 5 组 GPIO（GPIO1~GPIO5），每组 32 个引脚：
-
-```
-gpio_number = (group - 1) * 32 + pin
-// GPIO1_IO3 = 0*32 + 3 = 3
-// GPIO2_IO5 = 1*32 + 5 = 37
-```
-
-但更推荐使用描述符 API，无需手动计算编号。
-
 ## RK3568 GPIO 编号计算
 
 RK3568 有 5 组 GPIO（GPIO0~GPIO4），每组 32 个引脚，每组内分 A/B/C/D 四个 port（各 8 个）：

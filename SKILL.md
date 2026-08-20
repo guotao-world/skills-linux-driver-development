@@ -1,6 +1,6 @@
 ---
 name: linux-driver-development
-description: Linux 内核驱动开发专业技能，覆盖字符设备、平台设备、GPIO、I2C、SPI、设备树、中断处理、内核同步机制、调试技巧等。当用户需要编写、修改、调试 Linux 内核驱动模块，理解内核子系统，或解决驱动相关问题（如设备节点创建、probe 函数、compatible 匹配、中断注册、并发竞态等）时使用。适用于 ARM/ARM64 嵌入式平台（IMX6 ULL、RK3568 等）的驱动开发学习与实践。
+description: Linux 内核驱动开发专业技能，覆盖字符设备、平台设备、GPIO、I2C、SPI、设备树、中断处理、内核同步机制、调试技巧等。当用户需要编写、修改、调试 Linux 内核驱动模块，理解内核子系统，或解决驱动相关问题（如设备节点创建、probe 函数、compatible 匹配、中断注册、并发竞态等）时使用。适用于 ARM64 嵌入式平台（RK3568 等）的驱动开发学习与实践，所有模板以 Linux Kernel 4.19 为标准。
 ---
 
 # Linux 驱动开发技能
@@ -24,7 +24,6 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 | 块设备 | ramdisk、SD卡、eMMC、硬盘等存储设备 | `references/block-device.md` |
 | 设备树 | 硬件描述、节点编写 | `references/device-tree.md` |
 | RK3568 平台 | RK3568 专用：GPIO编号、pinctrl、设备树、编译 | `references/platform-rk3568.md` |
-| IMX6 ULL 平台 | IMX6 ULL 专用：GPIO编号、设备树节点 | 见各参考文档中的 IMX6 章节 |
 
 ### 2. 选择代码模板
 
@@ -41,7 +40,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 
 - 内核模块必须包含 `#include <linux/module.h>`、`MODULE_LICENSE("GPL")`
 - 使用模板中的 Makefile，设置 `KDIR` 指向目标内核源码树
-- 交叉编译时设置 `ARCH` 和 `CROSS_COMPILE`
+- 交叉编译时设置 `ARCH=arm64` 和 `CROSS_COMPILE=aarch64-linux-gnu-`
 
 ### 4. 调试与验证
 
@@ -104,6 +103,6 @@ rq_for_each_segment(bvec, req, iter);  // 遍历请求中所有 bio 段
 - 回答用户驱动问题时，优先给出**可编译运行的完整代码**，而非片段
 - 解释代码时按「初始化 → 核心逻辑 → 清理」三段式说明
 - 涉及硬件寄存器时，提醒用户查阅对应芯片的 Reference Manual
-- IMX6 ULL 平台相关问题，可参考 NXP 官方内核源码 `drivers/` 目录下的示例驱动
 - RK3568 平台相关问题，先查阅 `references/platform-rk3568.md`，注意是 ARM64 架构，工具链用 `aarch64-linux-gnu-`
+- 所有代码模板以 Linux Kernel 4.19 为标准编写
 - 用户有 C 语言基础，解释时可直接使用指针、结构体等概念，无需额外铺垫

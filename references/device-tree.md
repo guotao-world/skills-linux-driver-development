@@ -7,7 +7,7 @@
 - [常用属性](#常用属性)
 - [地址与中断](#地址与中断)
 - [驱动中解析设备树](#驱动中解析设备树)
-- [IMX6 ULL 示例](#imx6-ull-示例)
+- [RK3568 设备树示例](#rk3568-设备树示例)
 - [常用工具](#常用工具)
 
 ## 设备树基础
@@ -23,18 +23,18 @@
 
 ```dts
 /dts-v1/;                    // 版本声明
-/include/ "imx6ull.dtsi"     // 包含 SoC 级 dtsi
+/include/ "rk3568.dtsi"      // 包含 SoC 级 dtsi
 
 / {                          // 根节点
     model = "My Board";      // 属性
-    compatible = "vendor,my-board", "fsl,imx6ull";
+    compatible = "vendor,my-board", "rockchip,rk3568";
 
     aliases {                // 别名节点
-        serial0 = &uart1;
+        serial0 = &uart2;
     };
 
     chosen {                 // 运行时参数
-        bootargs = "console=ttymxc0,115200 root=/dev/mmcblk1p2 rw";
+        bootargs = "console=ttyS2,115200 root=/dev/mmcblk1p2 rw";
     };
 
     memory@80000000 {        // 内存节点
@@ -44,12 +44,12 @@
 
     my_leds {                // 自定义节点
         compatible = "vendor,my-leds";
-        led-gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+        led-gpios = <&gpio3 RK_PA5 GPIO_ACTIVE_HIGH>;
         status = "okay";
     };
 };
 
-&uart1 {                     // 引用已有节点并追加/修改
+&uart2 {                     // 引用已有节点并追加/修改
     status = "okay";
 };
 ```
@@ -75,7 +75,7 @@ reg = <0x80000000 0x20000000>;
 compatible = "vendor,device";
 
 // 字符串列表
-compatible = "vendor,board", "fsl,imx6ull";
+compatible = "vendor,board", "rockchip,rk3568";
 
 // 字节数组
 mac-address = [00 11 22 33 44 55];
@@ -120,8 +120,8 @@ soc {
 
 ```dts
 // 中断控制器节点
-intc: interrupt-controller@00a01000 {
-    compatible = "arm,cortex-a7-gic";
+intc: interrupt-controller@fd000000 {
+    compatible = "arm,gic-v3";
     #interrupt-cells = <3>;      // 中断描述用3个cell
     interrupt-controller;         // 标记为中断控制器
 };
@@ -130,13 +130,13 @@ intc: interrupt-controller@00a01000 {
 my_device@02000000 {
     interrupt-parent = <&intc>;
     // GIC: <类型 中断号 触发方式>
-    // 类型: 0=SPI(共享外设中断), 1=PPI(私有外设中断)
-    // 触发方式: 1=上升沿, 4=高电平
-    interrupts = <0 25 4>;
+    // 类型: GIC_SPI(共享外设中断), GIC_PPI(私有外设中断)
+    // 触发方式: IRQ_TYPE_EDGE_RISING, IRQ_TYPE_LEVEL_HIGH 等
+    interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
 };
 ```
 
-IMX6 的 GIC 中断号换算：SPI 中断号 = 硬件中断号 - 32。设备树中写的是 SPI 编号。
+RK3568 的 GIC 中断号换算：SPI 中断号从 0 开始，对应硬件中断号 = SPI号 + 32。设备树中写的是 SPI 编号。
 
 ## 驱动中解析设备树
 
@@ -174,44 +174,6 @@ for_each_child_of_node(np, child) {
 }
 ```
 
-## IMX6 ULL 示例
-
-### 启用 UART
-
-```dts
-&uart1 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&pinctrl_uart1>;
-    status = "okay";
-};
-
-&iomuxc {
-    pinctrl_uart1: uart1grp {
-        fsl,pins = <
-            MX6UL_PAD_UART1_TX_DATA__UART1_DCE_TX 0x1b0b1
-            MX6UL_PAD_UART1_RX_DATA__UART1_DCE_RX 0x1b0b1
-        >;
-    };
-};
-```
-
-### 自定义 I2C 设备
-
-```dts
-&i2c1 {
-    clock-frequency = <100000>;
-    status = "okay";
-
-    my_sensor@48 {
-        compatible = "vendor,my-sensor";
-        reg = <0x48>;
-        interrupt-parent = <&gpio1>;
-        interrupts = <4 IRQ_TYPE_EDGE_FALLING>;
-        vdd-supply = <&reg_3p3v>;
-    };
-};
-```
-
 ## RK3568 设备树示例
 
 ### 目录结构
@@ -231,6 +193,8 @@ arch/arm64/boot/dts/rockchip/
     pinctrl-0 = <&uart2m0_xfer>;
 };
 ```
+
+RK3568 调试串口通常是 uart2，console 参数：`console=ttyS2,115200`。
 
 ### 自定义 I2C 设备
 
@@ -253,6 +217,8 @@ arch/arm64/boot/dts/rockchip/
 ```dts
 gpio_keys {
     compatible = "gpio-keys";
+    pinctrl-names = "default";
+    pinctrl-0 = <&key_pins>;
 
     key_power: power-key {
         gpios = <&gpio0 RK_PB5 GPIO_ACTIVE_LOW>;
@@ -280,6 +246,7 @@ gpio_leds {
     my_device {
         my_pins: my-pins {
             rockchip,pins = <0 RK_PB5 RK_FUNC_GPIO &pcfg_pull_up>;
+            /* bank=0, pin=PB5, 功能=GPIO, 配置=上拉 */
         };
     };
 };
