@@ -487,17 +487,6 @@ pr_info("queue_rq: op=%s sector=%llu bytes=%u\n",
   make -C /path/to/kernel M=$(pwd) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules
   ```
 
-### IMX6 ULL (ARM32)
-
-- 架构：ARM Cortex-A7（32位），工具链 `arm-linux-gnueabihf-`
-- 内核：NXP 官方通常基于 4.1.x 或 5.4
-- 存储外设：uSDHC（SD/eMMC）、NAND Flash、SPI NOR
-- 注意 4.1 内核中 blk-mq API 与 4.19 基本一致，但部分细节可能不同
-- 编译命令：
-  ```bash
-  make -C /path/to/kernel M=$(pwd) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- modules
-  ```
-
 ### 通用注意
 
 - ramdisk 用 `vzalloc` 分配内存（不需要物理连续）

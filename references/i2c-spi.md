@@ -45,7 +45,11 @@ struct my_i2c_data {
     // 私有数据
 };
 
-static int my_i2c_probe(struct i2c_client *client)
+/*
+ * I2C 设备探测函数（Linux 4.19 双参数签名）
+ */
+static int my_i2c_probe(struct i2c_client *client,
+                         const struct i2c_device_id *id)
 {
     struct my_i2c_data *data;
 
@@ -59,9 +63,10 @@ static int my_i2c_probe(struct i2c_client *client)
     return 0;
 }
 
-static void my_i2c_remove(struct i2c_client *client)
+static int my_i2c_remove(struct i2c_client *client)
 {
     dev_info(&client->dev, "removed\n");
+    return 0;
 }
 
 static const struct of_device_id my_of_match[] = {
@@ -217,7 +222,7 @@ spi_sync(spi, &msg);
 
 ## 设备树绑定
 
-### I2C 设备
+### I2C 设备（RK3568）
 
 ```dts
 &i2c1 {
@@ -227,17 +232,21 @@ spi_sync(spi, &msg);
     my_sensor@48 {
         compatible = "vendor,my-i2c-sensor";
         reg = <0x48>;            // I2C 7位地址
-        vdd-supply = <&reg_3v3>;
+        interrupt-parent = <&gpio0>;
+        interrupts = <RK_PB5 IRQ_TYPE_EDGE_FALLING>;
     };
 };
 ```
 
-### SPI 设备
+RK3568 有 i2c0~i2c5，共 6 路 I2C。
+
+### SPI 设备（RK3568）
 
 ```dts
-&ecspi1 {
+&spi0 {
     status = "okay";
-    cs-gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&spi0m0_cs0 &spi0m0_pins>;
 
     my_spi_dev@0 {
         compatible = "vendor,my-spi-device";
@@ -248,3 +257,5 @@ spi_sync(spi, &msg);
     };
 };
 ```
+
+RK3568 有 spi0~spi3，共 4 路 SPI。pinctrl 命名规则：`<外设><编号>m<复用号>_<功能>`，如 `spi0m0_cs0`（SPI0 第0组复用 + 片选0）、`spi0m0_pins`（SPI0 第0组复用引脚）。
