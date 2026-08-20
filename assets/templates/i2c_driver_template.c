@@ -1,6 +1,7 @@
 /*
  * I2C 客户端驱动模板
  * 功能：I2C 传感器驱动框架，包含寄存器读写
+ * 目标内核：Linux 4.19
  *
  * 配套设备树节点：
  *   &i2c1 {
@@ -61,7 +62,17 @@ static int my_read_block(struct my_i2c_data *data, u8 reg, u8 len, u8 *buf)
     return 0;
 }
 
-static int my_i2c_probe(struct i2c_client *client)
+/*
+ * I2C 设备探测函数
+ *
+ * 注意：Linux 4.19 中 i2c_driver.probe 的签名为双参数：
+ *   int (*probe)(struct i2c_client *client, const struct i2c_device_id *id);
+ *
+ * 从 Linux 5.0 开始，第二个参数 id 被移除（单参数签名）。
+ * 本模板以 4.19 为标准，保留双参数签名。
+ */
+static int my_i2c_probe(struct i2c_client *client,
+                         const struct i2c_device_id *id)
 {
     struct my_i2c_data *data;
     u8 whoami;
@@ -87,7 +98,7 @@ static int my_i2c_probe(struct i2c_client *client)
     return 0;
 }
 
-static void my_i2c_remove(struct i2c_client *client)
+static int my_i2c_remove(struct i2c_client *client)
 {
     struct my_i2c_data *data = i2c_get_clientdata(client);
 
@@ -95,6 +106,7 @@ static void my_i2c_remove(struct i2c_client *client)
     my_write_reg(data, REG_CTRL, 0x00);
 
     dev_info(&client->dev, "removed\n");
+    return 0;
 }
 
 /* 设备树匹配表 */
@@ -104,7 +116,7 @@ static const struct of_device_id my_i2c_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, my_i2c_of_match);
 
-/* 传统 I2C ID 表（非设备树系统用） */
+/* 传统 I2C ID 表（非设备树系统用，4.19 中 i2c_driver.id_table 为必填） */
 static const struct i2c_device_id my_i2c_id[] = {
     { "my_i2c_sensor", 0 },
     { /* sentinel */ }
@@ -124,4 +136,4 @@ module_i2c_driver(my_i2c_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Your Name");
-MODULE_DESCRIPTION("I2C client driver template");
+MODULE_DESCRIPTION("I2C client driver template (Linux 4.19)");
