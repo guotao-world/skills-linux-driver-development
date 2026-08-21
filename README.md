@@ -13,7 +13,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 
 - 编写或修改 Linux 内核驱动模块（字符设备、平台设备、GPIO、I2C、SPI、块设备、ASoC 音频 codec 等）
 - 调试驱动问题（probe 不执行、设备节点未创建、中断不触发、并发竞态、内核 Oops、音频通路匹配失败等）
-- 理解内核子系统（cdev、platform bus、blk-mq、设备树、中断子系统、ASoC 音频框架等）
+- 理解内核子系统（cdev、platform bus、blk-mq、设备树、中断子系统、ASoC 音频框架、regmap 等）
 - 基于 RK3568 等 ARM64 平台进行驱动开发实践
 
 ## 技能工作流程
@@ -29,12 +29,13 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 | 字符设备 | 虚拟设备、简单自定义设备、LED/按键 | `references/char-device.md` |
 | 平台设备 | 基于设备树的 SoC 外设 | `references/platform-device.md` |
 | GPIO | 引脚控制、按键、LED | `references/gpio.md` |
-| I2C | 传感器、EEPROM、触摸屏 | `references/i2c-spi.md` |
+| I2C | 传感器、EEPROM、触摸屏、音频 codec | `references/i2c-spi.md` |
 | SPI | Flash、显示屏、ADC | `references/i2c-spi.md` |
 | 中断 | 按键中断、硬件中断 | `references/interrupts-sync.md` |
 | 块设备 | ramdisk、SD卡、eMMC、硬盘等存储设备 | `references/block-device.md` |
 | 设备树 | 硬件描述、节点编写 | `references/device-tree.md` |
 | ASoC 音频 codec | 音频编解码器、dummy codec、机器驱动匹配 | `references/asoc-codec.md` |
+| ASoC I2C codec | I2C 接口音频 codec、regmap、控件、DAPM | `references/asoc-i2c-codec.md` |
 | RK3568 平台 | RK3568 专用：GPIO编号、pinctrl、设备树、编译 | `references/platform-rk3568.md` |
 
 ### 2. 选择代码模板
@@ -48,7 +49,8 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 | `gpio_driver_template.c` | GPIO 控制驱动（LED 输出 + 按键中断输入） |
 | `i2c_driver_template.c` | I2C 客户端驱动（SMBus 寄存器读写） |
 | `block_device_template.c` | 块设备驱动（blk-mq 框架，ramdisk 示例） |
-| `asoc_dummy_codec_template.c` | ASoC dummy codec 驱动（最简音频 codec，验证音频通路） |
+| `asoc_dummy_codec_template.c` | ASoC dummy codec 驱动（platform bus，最简音频 codec） |
+| `asoc_i2c_dummy_codec_template.c` | ASoC I2C dummy codec 驱动（I2C bus + regmap + 控件 + DAPM） |
 | `Makefile.template` | 内核模块编译 Makefile |
 
 ### 3. 编写与编译
@@ -61,7 +63,8 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 
 - 优先使用 `printk` + `dmesg` 跟踪执行流程
 - 检查 `/proc/devices`、`/sys/class/`、`/dev/` 确认设备注册
-- 音频驱动检查 `/proc/asound/cards`、`aplay -l`、`arecord -l`
+- 音频驱动检查 `/proc/asound/cards`、`aplay -l`、`arecord -l`、`amixer contents`
+- I2C 设备用 `i2cdetect -y <bus>` 扫描，regmap 用 debugfs 查看寄存器
 - 复杂问题参考 `references/debugging.md`
 
 ## 技能资源清单
@@ -72,7 +75,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 ├── README.md                       # 本文件（技能说明）
 ├── LICENSE                         # GPL-3.0 许可证
 ├── .gitignore                      # Git 忽略规则
-├── references/                     # 参考文档（11篇）
+├── references/                     # 参考文档（12篇）
 │   ├── char-device.md              # 字符设备驱动
 │   ├── platform-device.md          # 平台设备驱动
 │   ├── gpio.md                     # GPIO 子系统
@@ -80,18 +83,20 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 │   ├── interrupts-sync.md          # 中断处理与内核同步
 │   ├── block-device.md             # 块设备驱动（blk-mq）
 │   ├── device-tree.md              # 设备树
-│   ├── asoc-codec.md               # ASoC 音频 codec 驱动
+│   ├── asoc-codec.md               # ASoC 音频 codec 驱动（基础）
+│   ├── asoc-i2c-codec.md           # ASoC I2C codec 驱动（regmap/控件/DAPM）
 │   ├── debugging.md                # 驱动调试技巧
 │   ├── kernel-api-cheatsheet.md    # 内核 API 速查表
 │   └── platform-rk3568.md          # RK3568 平台参考
 └── assets/
-    └── templates/                   # 代码模板（7个，均基于 4.19）
+    └── templates/                   # 代码模板（8个，均基于 4.19）
         ├── char_device_template.c
         ├── platform_driver_template.c
         ├── gpio_driver_template.c
         ├── i2c_driver_template.c
         ├── block_device_template.c
         ├── asoc_dummy_codec_template.c
+        ├── asoc_i2c_dummy_codec_template.c
         └── Makefile.template
 ```
 

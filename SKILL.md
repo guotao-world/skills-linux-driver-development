@@ -18,12 +18,13 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 | 字符设备 | 虚拟设备、简单自定义设备、LED/按键 | `references/char-device.md` |
 | 平台设备 | 基于设备树的 SoC 外设 | `references/platform-device.md` |
 | GPIO | 引脚控制、按键、LED | `references/gpio.md` |
-| I2C | 传感器、EEPROM、触摸屏 | `references/i2c-spi.md` |
+| I2C | 传感器、EEPROM、触摸屏、音频 codec | `references/i2c-spi.md` |
 | SPI | Flash、显示屏、ADC | `references/i2c-spi.md` |
 | 中断 | 按键中断、硬件中断 | `references/interrupts-sync.md` |
 | 块设备 | ramdisk、SD卡、eMMC、硬盘等存储设备 | `references/block-device.md` |
 | 设备树 | 硬件描述、节点编写 | `references/device-tree.md` |
 | ASoC 音频 codec | 音频编解码器、dummy codec、机器驱动匹配 | `references/asoc-codec.md` |
+| ASoC I2C codec | I2C 接口音频 codec、regmap、控件、DAPM | `references/asoc-i2c-codec.md` |
 | RK3568 平台 | RK3568 专用：GPIO编号、pinctrl、设备树、编译 | `references/platform-rk3568.md` |
 
 ### 2. 选择代码模板
@@ -35,7 +36,8 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 - `gpio_driver_template.c` — GPIO 控制驱动
 - `i2c_driver_template.c` — I2C 客户端驱动
 - `block_device_template.c` — 块设备驱动（blk-mq 框架，ramdisk 示例）
-- `asoc_dummy_codec_template.c` — ASoC dummy codec 驱动（最简音频 codec）
+- `asoc_dummy_codec_template.c` — ASoC dummy codec 驱动（platform bus，最简）
+- `asoc_i2c_dummy_codec_template.c` — ASoC I2C dummy codec 驱动（I2C + regmap + 控件 + DAPM）
 - `Makefile.template` — 内核模块编译 Makefile
 
 ### 3. 编写与编译
@@ -48,7 +50,8 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 
 - 优先使用 `printk` + `dmesg` 跟踪执行流程
 - 检查 `/proc/devices`、`/sys/class/`、`/dev/` 确认设备注册
-- 音频驱动检查 `/proc/asound/cards`、`aplay -l`
+- 音频驱动检查 `/proc/asound/cards`、`aplay -l`、`amixer contents`
+- I2C 设备用 `i2cdetect` 扫描，regmap 用 debugfs 查看寄存器
 - 复杂问题参考 `references/debugging.md`
 
 ## 核心原则
@@ -102,6 +105,11 @@ rq_for_each_segment(bvec, req, iter);  // 遍历请求中所有 bio 段
 
 // ASoC codec（4.18+）
 devm_snd_soc_register_component(dev, &component_drv, &dai_drv, num_dai);
+
+// regmap（I2C codec 用）
+devm_regmap_init_i2c(client, &regmap_config);
+regmap_read(regmap, reg, &val); regmap_write(regmap, reg, val);
+regmap_update_bits(regmap, reg, mask, val);
 ```
 
 ## 注意事项
@@ -110,6 +118,7 @@ devm_snd_soc_register_component(dev, &component_drv, &dai_drv, num_dai);
 - 解释代码时按「初始化 → 核心逻辑 → 清理」三段式说明
 - 涉及硬件寄存器时，提醒用户查阅对应芯片的 Reference Manual
 - RK3568 平台相关问题，先查阅 `references/platform-rk3568.md`，注意是 ARM64 架构，工具链用 `aarch64-linux-gnu-`
-- ASoC 音频 codec 相关问题，先查阅 `references/asoc-codec.md`，注意 4.19 用 `snd_soc_component_driver` 而非废弃的 `snd_soc_codec_driver`
+- ASoC 音频 codec 基础问题，先查阅 `references/asoc-codec.md`
+- ASoC I2C codec（含 regmap、控件、DAPM）问题，先查阅 `references/asoc-i2c-codec.md`，注意 4.19 用 `snd_soc_component_driver` 而非废弃的 `snd_soc_codec_driver`，component probe 中需绑定 `component->regmap`
 - 所有代码模板以 Linux Kernel 4.19 为标准编写
 - 用户有 C 语言基础，解释时可直接使用指针、结构体等概念，无需额外铺垫
