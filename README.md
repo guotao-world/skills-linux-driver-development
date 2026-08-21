@@ -1,6 +1,6 @@
 ---
 name: linux-driver-development
-description: Linux 内核驱动开发专业技能，覆盖字符设备、平台设备、GPIO、I2C、SPI、设备树、中断处理、内核同步机制、调试技巧等。当用户需要编写、修改、调试 Linux 内核驱动模块，理解内核子系统，或解决驱动相关问题（如设备节点创建、probe 函数、compatible 匹配、中断注册、并发竞态等）时使用。适用于 ARM64 嵌入式平台（RK3568 等）的驱动开发学习与实践，所有模板以 Linux Kernel 4.19 为标准。
+description: Linux 内核驱动开发专业技能，覆盖字符设备、平台设备、GPIO、I2C、SPI、设备树、中断处理、内核同步机制、ASoC 音频 codec、调试技巧等。当用户需要编写、修改、调试 Linux 内核驱动模块，理解内核子系统，或解决驱动相关问题（如设备节点创建、probe 函数、compatible 匹配、中断注册、并发竞态、音频通路匹配等）时使用。适用于 ARM64 嵌入式平台（RK3568 等）的驱动开发学习与实践，所有模板以 Linux Kernel 4.19 为标准。
 ---
 
 # Linux 驱动开发技能
@@ -11,9 +11,9 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 
 当用户提出以下需求时，本技能被激活：
 
-- 编写或修改 Linux 内核驱动模块（字符设备、平台设备、GPIO、I2C、SPI、块设备等）
-- 调试驱动问题（probe 不执行、设备节点未创建、中断不触发、并发竞态、内核 Oops 等）
-- 理解内核子系统（cdev、platform bus、blk-mq、设备树、中断子系统等）
+- 编写或修改 Linux 内核驱动模块（字符设备、平台设备、GPIO、I2C、SPI、块设备、ASoC 音频 codec 等）
+- 调试驱动问题（probe 不执行、设备节点未创建、中断不触发、并发竞态、内核 Oops、音频通路匹配失败等）
+- 理解内核子系统（cdev、platform bus、blk-mq、设备树、中断子系统、ASoC 音频框架等）
 - 基于 RK3568 等 ARM64 平台进行驱动开发实践
 
 ## 技能工作流程
@@ -34,6 +34,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 | 中断 | 按键中断、硬件中断 | `references/interrupts-sync.md` |
 | 块设备 | ramdisk、SD卡、eMMC、硬盘等存储设备 | `references/block-device.md` |
 | 设备树 | 硬件描述、节点编写 | `references/device-tree.md` |
+| ASoC 音频 codec | 音频编解码器、dummy codec、机器驱动匹配 | `references/asoc-codec.md` |
 | RK3568 平台 | RK3568 专用：GPIO编号、pinctrl、设备树、编译 | `references/platform-rk3568.md` |
 
 ### 2. 选择代码模板
@@ -47,6 +48,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 | `gpio_driver_template.c` | GPIO 控制驱动（LED 输出 + 按键中断输入） |
 | `i2c_driver_template.c` | I2C 客户端驱动（SMBus 寄存器读写） |
 | `block_device_template.c` | 块设备驱动（blk-mq 框架，ramdisk 示例） |
+| `asoc_dummy_codec_template.c` | ASoC dummy codec 驱动（最简音频 codec，验证音频通路） |
 | `Makefile.template` | 内核模块编译 Makefile |
 
 ### 3. 编写与编译
@@ -59,6 +61,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 
 - 优先使用 `printk` + `dmesg` 跟踪执行流程
 - 检查 `/proc/devices`、`/sys/class/`、`/dev/` 确认设备注册
+- 音频驱动检查 `/proc/asound/cards`、`aplay -l`、`arecord -l`
 - 复杂问题参考 `references/debugging.md`
 
 ## 技能资源清单
@@ -69,7 +72,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 ├── README.md                       # 本文件（技能说明）
 ├── LICENSE                         # GPL-3.0 许可证
 ├── .gitignore                      # Git 忽略规则
-├── references/                     # 参考文档（10篇）
+├── references/                     # 参考文档（11篇）
 │   ├── char-device.md              # 字符设备驱动
 │   ├── platform-device.md          # 平台设备驱动
 │   ├── gpio.md                     # GPIO 子系统
@@ -77,16 +80,18 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 │   ├── interrupts-sync.md          # 中断处理与内核同步
 │   ├── block-device.md             # 块设备驱动（blk-mq）
 │   ├── device-tree.md              # 设备树
+│   ├── asoc-codec.md               # ASoC 音频 codec 驱动
 │   ├── debugging.md                # 驱动调试技巧
 │   ├── kernel-api-cheatsheet.md    # 内核 API 速查表
 │   └── platform-rk3568.md          # RK3568 平台参考
 └── assets/
-    └── templates/                   # 代码模板（6个，均基于 4.19）
+    └── templates/                   # 代码模板（7个，均基于 4.19）
         ├── char_device_template.c
         ├── platform_driver_template.c
         ├── gpio_driver_template.c
         ├── i2c_driver_template.c
         ├── block_device_template.c
+        ├── asoc_dummy_codec_template.c
         └── Makefile.template
 ```
 
