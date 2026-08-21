@@ -1,5 +1,5 @@
 ---
-name: linux-driver-development
+name: skills-linux-driver-development
 description: Linux 内核驱动开发专业技能，覆盖字符设备、平台设备、GPIO、I2C、SPI、设备树、中断处理、内核同步机制、ASoC 音频 codec、调试技巧等。当用户需要编写、修改、调试 Linux 内核驱动模块，理解内核子系统，或解决驱动相关问题（如设备节点创建、probe 函数、compatible 匹配、中断注册、并发竞态、音频通路匹配等）时使用。适用于 ARM64 嵌入式平台（RK3568 等）的驱动开发学习与实践，所有模板以 Linux Kernel 4.19 为标准。
 ---
 
