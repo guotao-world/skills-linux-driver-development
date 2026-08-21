@@ -43,7 +43,7 @@ description: Linux 内核驱动开发专业技能，覆盖字符设备、平台�
 ### 3. 编写与编译
 
 - 内核模块必须包含 `#include <linux/module.h>`、`MODULE_LICENSE("GPL")`
-- 使用模板中的 Makefile，设置 `KDIR` 指向目标内核源码树
+- 使用模板中的 Makefile，设置 `KERNELDIR` 指向目标内核源码树
 - 交叉编译时设置 `ARCH=arm64` 和 `CROSS_COMPILE=aarch64-linux-gnu-`
 
 ### 4. 调试与验证
