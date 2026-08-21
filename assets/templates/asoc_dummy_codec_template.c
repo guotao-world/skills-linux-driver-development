@@ -41,7 +41,7 @@
  * - ops:      DAI 操作函数集（hw_params、set_fmt 等，可选）
  */
 static struct snd_soc_dai_driver my_dummy_dai = {
-    .name = "my-codec-dai",
+    /* .name = "my-codec", */  /* 4.19 可不设置，避免匹配问题 */
 
     .playback = {
         .stream_name  = "Playback",

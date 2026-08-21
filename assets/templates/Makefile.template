@@ -1,43 +1,20 @@
 # Linux 内核模块编译 Makefile 模板
-#
-# 使用方法：
-#   1. 修改 obj-m 为你的模块名（.o 后缀）
-#   2. 设置 KDIR 为目标内核源码路径
-#   3. 本地编译：make
-#   4. 交叉编译：make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
-#   5. 清理：make clean
 
-# 模块目标文件（修改为你的源文件名，.c 对应 .o）
-obj-m := char_device_template.o
+KERNELDIR := /home/xxxxx/workspace/rk3568_linux_sdk/kernel
 
-# 内核源码路径
-# 本地编译用 /lib/modules/$(shell uname -r)/build
-# 交叉编译修改为实际内核源码树路径，如 /home/user/linux-rk3568
-KDIR ?= /lib/modules/$(shell uname -r)/build
+CURRENT_PATH := $(shell pwd)
 
-# 当前目录
-PWD := $(shell pwd)
+ARCH := arm64
+CROSS_COMPILE := ../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
 
-# 默认目标：编译模块
-all:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
 
-# 清理
+obj-m := led.o
+
+build: kernel_modules
+
+kernel_modules:
+	$(MAKE) -C $(KERNELDIR) M=$(CURRENT_PATH) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+
 clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	$(MAKE) -C $(KERNELDIR) M=$(CURRENT_PATH) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) clean
 
-# 安装模块到目标系统（可选）
-install:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules_install
-
-# 帮助
-help:
-	@echo "可用目标:"
-	@echo "  all      - 编译内核模块（默认）"
-	@echo "  clean    - 清理编译产物"
-	@echo "  install  - 安装模块"
-	@echo ""
-	@echo "RK3568 交叉编译示例:"
-	@echo "  make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- KDIR=~/linux-rk3568"
-
-.PHONY: all clean install help
